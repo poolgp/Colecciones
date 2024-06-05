@@ -145,3 +145,89 @@ function jointPais()
 
     return $resultado;
 }
+
+function getCantanteById($id)
+{
+    $conn = openBD();
+
+    $sentenciaText = "
+        SELECT c.id, c.nombre, c.fecha_nacimiento, c.pais_id, c.imagen, GROUP_CONCAT(cc.cancion_id SEPARATOR ', ') AS canciones
+        FROM cantantes c
+        LEFT JOIN cantantes_canciones cc ON c.id = cc.cantante_id
+        WHERE c.id = :id
+        GROUP BY c.id, c.nombre, c.fecha_nacimiento, c.pais_id, c.imagen
+    ";
+    $sentencia = $conn->prepare($sentenciaText);
+    $sentencia->bindParam(':id', $id);
+    $sentencia->execute();
+
+    $cantante = $sentencia->fetch(PDO::FETCH_ASSOC);
+
+    closeBD();
+    return $cantante;
+}
+
+function updateCantante($id, $nombre, $fechaNacimiento, $pais, $imagen, $canciones)
+{
+    $conn = openBD();
+
+    $sentenciaText = "UPDATE cantantes 
+                      SET nombre = :nombre, fecha_nacimiento = :fechaNacimiento, pais_id = :pais";
+
+    if (!empty($imagen['name'])) {
+        $rutaImg = "/colecciones/imagenes/";
+        $nombreArchivo = $imagen['name'];
+        $imgSubida = $rutaImg . $nombreArchivo;
+        move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
+        $sentenciaText .= ", imagen = :imagen";
+    }
+
+    $sentenciaText .= " WHERE id = :id";
+    $sentencia = $conn->prepare($sentenciaText);
+    $sentencia->bindParam(':id', $id);
+    $sentencia->bindParam(':nombre', $nombre);
+    $sentencia->bindParam(':fechaNacimiento', $fechaNacimiento);
+    $sentencia->bindParam(':pais', $pais);
+
+    if (!empty($imagen['name'])) {
+        $sentencia->bindParam(':imagen', $imgSubida);
+    }
+
+    $sentencia->execute();
+
+    // Actualizamos las canciones
+    $sentenciaText = "DELETE FROM cantantes_canciones WHERE cantante_id = :id";
+    $sentencia = $conn->prepare($sentenciaText);
+    $sentencia->bindParam(':id', $id);
+    $sentencia->execute();
+
+    foreach ($canciones as $cancion) {
+        $sentenciaText = "INSERT INTO cantantes_canciones (cantante_id, cancion_id) VALUES (:cantanteId, :cancionId)";
+        $sentencia = $conn->prepare($sentenciaText);
+        $sentencia->bindParam(':cantanteId', $id);
+        $sentencia->bindParam(':cancionId', $cancion);
+        $sentencia->execute();
+    }
+
+    closeBD();
+}
+
+function eliminarCantante($id)
+{
+    $conn = openBD();
+
+    // Elimina las asociaciones de canciones del cantante
+    $sentenciaText = "DELETE FROM cantantes_canciones WHERE cantante_id = :id";
+    $sentencia = $conn->prepare($sentenciaText);
+    $sentencia->bindParam(':id', $id);
+    $sentencia->execute();
+
+    // Elimina el cantante
+    $sentenciaText = "DELETE FROM cantantes WHERE id = :id";
+    $sentencia = $conn->prepare($sentenciaText);
+    $sentencia->bindParam(':id', $id);
+    $sentencia->execute();
+
+    // Cierra la conexión a la base de datos
+    closeBD();
+}

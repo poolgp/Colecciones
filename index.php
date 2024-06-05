@@ -41,13 +41,19 @@ $paises = jointPais();
                                 }
                             } ?>
                         </li>
-                        <?php foreach ($cantante['canciones'] as $cancion) { ?>
-                            <li class="list-group-item"><?php echo $cancion['nombre']; ?></li>
-                        <?php } ?>
+                        <li class="list-group-item">
+                            <?php $canciones = explode(', ', $cantante['canciones']);
+                            foreach ($canciones as $cancion) { ?>
+                                <?php echo $cancion; ?>
+                            <?php } ?>
+                        </li>
                     </ul>
-                    <div class="card-body">
-                        <button type="button" class="btn btn-primary">Editar</button>
-                        <button type="button" class="btn btn-danger">Eliminar</button>
+                    <div class="card-body d-flex">
+                        <a href="./forms/editarCantante.php?id=<?php echo $cantante['id']; ?>" class="btn btn-primary">Editar</a>
+                        <form action="./php_controllers/cantanteController.php" method="POST">
+                            <input type="hidden" name="cantanteId" value="<?php echo $cantante['id']; ?>">
+                            <button type="submit" class="btn btn-danger" name="eliminarCantante">Eliminar</button>
+                        </form>
                     </div>
                 </div>
             <?php } ?>
