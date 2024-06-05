@@ -5,7 +5,7 @@ function errorMessage($ex)
     if (!empty($ex->errorInfo[1])) {
         switch ($ex->errorInfo[1]) {
             case 1062:
-                $mensaje = 'Registro ducplicado';
+                $mensaje = 'Registro duplicado';
                 break;
             case 1451:
                 $mensaje = 'Registro con elementos relacionados';
@@ -20,7 +20,7 @@ function errorMessage($ex)
                 $mensaje = "Usuario y/o password incorrectos";
                 break;
             case 1049:
-                $mensaje = "Base de datos deconocida";
+                $mensaje = "Base de datos desconocida";
                 break;
             case 2002:
                 $mensaje = "No se encuentra el servidor";
@@ -79,43 +79,40 @@ function selectCanciones()
     return $resultado;
 }
 
-function insertCantante($nombre, $fechaNacimiento, $pais, $canciones, $imagen)
+function insertCantante($nombre, $fecha_nacimiento, $pais_id, $imagen, $canciones)
 {
-    $conn = openBD();
+    try {
+        $conn = openBD();
+        $conn->beginTransaction();
 
-    $rutaImg = "/colecciones/imagenes/";
-    $nombreArchivo = $imagen['name'];
-    $imgSubida = $rutaImg . $nombreArchivo;
-    move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
+        // Insert into cantantes
+        $sentencia = $conn->prepare("INSERT INTO cantantes (nombre, fecha_nacimiento, pais_id, imagen) VALUES (?, ?, ?, ?)");
+        $sentencia->execute([$nombre, $fecha_nacimiento, $pais_id, $imagen]);
+        $cantante_id = $conn->lastInsertId();
 
-    $sentenciaText = "INSERT INTO cantantes (nombre, fecha_nacimiento, pais_id, imagen) VALUES (:nombre, :fechaNacimiento, :pais, :imagen)";
-    $sentencia = $conn->prepare($sentenciaText);
-    $sentencia->bindParam(':nombre', $nombre);
-    $sentencia->bindParam(':fechaNacimiento', $fechaNacimiento);
-    $sentencia->bindParam(':pais', $pais);
-    $sentencia->bindParam(':imagen', $imgSubida);
-    $sentencia->execute();
+        // Insert into cantantes_canciones
+        foreach ($canciones as $cancion_id) {
+            $sentencia = $conn->prepare("INSERT INTO cantantes_canciones (cantante_id, cancion_id) VALUES (?, ?)");
+            $sentencia->execute([$cantante_id, $cancion_id]);
+        }
 
-    $cantanteId = $conn->lastInsertId();
-
-    foreach ($canciones as $cancion) {
-        $sentenciaText = "INSERT INTO cantantes_canciones (cantante_id, cancion_id) VALUES (:cantanteId, :cancionId)";
-        $sentencia = $conn->prepare($sentenciaText);
-        $sentencia->bindParam(':cantanteId', $cantanteId);
-        $sentencia->bindParam(':cancionId', $cancion);
-        $sentencia->execute();
+        $conn->commit();
+        $conn = closeBD();
+        return true;
+    } catch (PDOException $ex) {
+        if ($conn) {
+            $conn->rollBack();
+        }
+        echo errorMessage($ex);
+        return false;
     }
-
-    closeBD();
 }
 
 function selectCantantes()
 {
     $conn = openBD();
 
-    $sentenciaText = "SELECT cantantes.id, cantantes.imagen, cantantes.nombre, cantantes.fecha_nacimiento, paises.nombre AS nombre_pais, GROUP_CONCAT(canciones.nombre SEPARATOR ', ') AS canciones
-                      FROM cantantes
-                      LEFT JOIN paises ON cantantes.pais_id = paises.id
+    $sentenciaText = "SELECT cantantes.*, GROUP_CONCAT(canciones.nombre SEPARATOR ', ') AS canciones FROM cantantes
                       LEFT JOIN cantantes_canciones ON cantantes.id = cantantes_canciones.cantante_id
                       LEFT JOIN canciones ON cantantes_canciones.cancion_id = canciones.id
                       GROUP BY cantantes.id";
@@ -132,102 +129,12 @@ function jointPais()
 {
     $conn = openBD();
 
-    $sentenciaText = "SELECT cantantes.id, cantantes.nombre AS nombre_cantante, cantantes.fecha_nacimiento, paises.nombre AS nombre_pais
-        FROM cantantes
-        INNER JOIN paises ON cantantes.pais_id = paises.id";
-
+    $sentenciaText = "SELECT cantantes.id, paises.nombre AS nombre_pais FROM cantantes JOIN paises ON cantantes.pais_id = paises.id";
     $sentencia = $conn->prepare($sentenciaText);
     $sentencia->execute();
 
-    $resultado = $sentencia->fetchAll(PDO::FETCH_ASSOC);
+    $resultado = $sentencia->fetchAll();
 
     $conn = closeBD();
-
     return $resultado;
-}
-
-function getCantanteById($id)
-{
-    $conn = openBD();
-
-    $sentenciaText = "
-        SELECT c.id, c.nombre, c.fecha_nacimiento, c.pais_id, c.imagen, GROUP_CONCAT(cc.cancion_id SEPARATOR ', ') AS canciones
-        FROM cantantes c
-        LEFT JOIN cantantes_canciones cc ON c.id = cc.cantante_id
-        WHERE c.id = :id
-        GROUP BY c.id, c.nombre, c.fecha_nacimiento, c.pais_id, c.imagen
-    ";
-    $sentencia = $conn->prepare($sentenciaText);
-    $sentencia->bindParam(':id', $id);
-    $sentencia->execute();
-
-    $cantante = $sentencia->fetch(PDO::FETCH_ASSOC);
-
-    closeBD();
-    return $cantante;
-}
-
-function updateCantante($id, $nombre, $fechaNacimiento, $pais, $imagen, $canciones)
-{
-    $conn = openBD();
-
-    $sentenciaText = "UPDATE cantantes 
-                      SET nombre = :nombre, fecha_nacimiento = :fechaNacimiento, pais_id = :pais";
-
-    if (!empty($imagen['name'])) {
-        $rutaImg = "/colecciones/imagenes/";
-        $nombreArchivo = $imagen['name'];
-        $imgSubida = $rutaImg . $nombreArchivo;
-        move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
-        $sentenciaText .= ", imagen = :imagen";
-    }
-
-    $sentenciaText .= " WHERE id = :id";
-    $sentencia = $conn->prepare($sentenciaText);
-    $sentencia->bindParam(':id', $id);
-    $sentencia->bindParam(':nombre', $nombre);
-    $sentencia->bindParam(':fechaNacimiento', $fechaNacimiento);
-    $sentencia->bindParam(':pais', $pais);
-
-    if (!empty($imagen['name'])) {
-        $sentencia->bindParam(':imagen', $imgSubida);
-    }
-
-    $sentencia->execute();
-
-    // Actualizamos las canciones
-    $sentenciaText = "DELETE FROM cantantes_canciones WHERE cantante_id = :id";
-    $sentencia = $conn->prepare($sentenciaText);
-    $sentencia->bindParam(':id', $id);
-    $sentencia->execute();
-
-    foreach ($canciones as $cancion) {
-        $sentenciaText = "INSERT INTO cantantes_canciones (cantante_id, cancion_id) VALUES (:cantanteId, :cancionId)";
-        $sentencia = $conn->prepare($sentenciaText);
-        $sentencia->bindParam(':cantanteId', $id);
-        $sentencia->bindParam(':cancionId', $cancion);
-        $sentencia->execute();
-    }
-
-    closeBD();
-}
-
-function eliminarCantante($id)
-{
-    $conn = openBD();
-
-    // Elimina las asociaciones de canciones del cantante
-    $sentenciaText = "DELETE FROM cantantes_canciones WHERE cantante_id = :id";
-    $sentencia = $conn->prepare($sentenciaText);
-    $sentencia->bindParam(':id', $id);
-    $sentencia->execute();
-
-    // Elimina el cantante
-    $sentenciaText = "DELETE FROM cantantes WHERE id = :id";
-    $sentencia = $conn->prepare($sentenciaText);
-    $sentencia->bindParam(':id', $id);
-    $sentencia->execute();
-
-    // Cierra la conexión a la base de datos
-    closeBD();
 }
