@@ -17,7 +17,7 @@ $canciones = selectCanciones();
 
 <body>
     <div class="container my-4">
-        <form action="" method="POST" enctype="multipart/form-data">
+        <form action="../php_controllers/cantanteController.php" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="cantanteNombre">Nombre Cantante: </label>
                 <input type="text" class="form-control" id="cantanteNombre" name="cantanteNombre" placeholder="Nombre del cantante">
@@ -27,15 +27,15 @@ $canciones = selectCanciones();
                 <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento">
             </div>
             <div class="form-group">
-                <label for="exampleFormControlSelect1">Select Pais:</label>
-                <select class="form-control" id="exampleFormControlSelect1">
+                <label for="selectPais">Select Pais:</label>
+                <select class="form-control" id="selectPais" name="selectPais">
                     <?php foreach ($paises as $pais) { ?>
                         <option value="<?php echo $pais['id'] ?>"><?php echo $pais['nombre'] ?></option>
                     <?php } ?>
                 </select>
             </div>
             <div class="form-group">
-                <label for="canciones">Canciones:</label>
+                <label for="chxCancion">Canciones:</label>
                 <?php foreach ($canciones as $cancion) { ?>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" name="chxCancion[]" id="chxCancion" value="<?php echo $cancion['id'] ?>">
