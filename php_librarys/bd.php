@@ -51,13 +51,13 @@ function insertCantante($imagen, $nombre, $fecha_nacimiento, $pais_id, $cancion_
     $conn = openBD();
 
     if (isset($_FILES['imagenCantante'])) {
-        $rutaImg = "/colecciones/imagenes/";
+        $rutaImg = "./imagenes/";
         $nombreArchivo = $_FILES['imagen']['name'];
         $imgSubida = $rutaImg . $nombreArchivo;
         move_uploaded_file($_FILES['imatge']['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
     }
 
-    $sentenciaText = ""
+    // $sentenciaText = ""
 }
 
 function selectCantantes()
