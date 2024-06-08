@@ -17,27 +17,47 @@ $canciones = selectCanciones();
 
 <body>
     <div class="container my-4">
+
+        <?php include_once("../php_partials/mensajes.php") ?>
+
+        <?php if (isset($_SESSION['cantante'])) {
+            $cantante = $_SESSION['cantante'];
+            unset($_SESSION['cantante']);
+        } else {
+            $cantante = [
+                'nombre' => '',
+                'fecha_nacimiento' => '',
+                'pais_id' => '',
+                'cancion_ids' => '',
+                'imagen' => ''
+            ];
+        }
+
+        ?>
+
         <form action="../php_controllers/cantanteController.php" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="cantanteNombre">Nombre Cantante: </label>
-                <input type="text" class="form-control" id="cantanteNombre" name="cantanteNombre" placeholder="Nombre del cantante">
+                <input type="text" class="form-control" id="cantanteNombre" name="cantanteNombre" placeholder="Nombre del cantante" value="<?php echo $cantante['nombre'] ?>">
             </div>
             <div class="form-group">
                 <label for="fechaNacimiento">Fecha Nacimiento: </label>
-                <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento">
+                <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" value="<?php echo $cantante['fecha_nacimiento'] ?>">
             </div>
             <div class="form-group">
                 <label for="selectPais">Select Pais:</label>
                 <select class="form-control" id="selectPais" name="selectPais">
                     <?php foreach ($paises as $pais) { ?>
-                        <option value="<?php echo $pais['id'] ?>"><?php echo $pais['nombre'] ?></option>
+                        <option value="<?php echo $pais['id'] ?>" <?php echo ($pais['id'] == $cantante['pais_id']) ? 'selected' : '' ?>>
+                            <?php echo $pais['nombre'] ?>
+                        </option>
                     <?php } ?>
                 </select>
             </div>
             <div class="form-group">
                 <label for="chxCancion">Canciones:</label>
                 <?php foreach ($canciones as $cancion) { ?>
-                    <div class="form-check form-check-inline">
+                    <div class="form-check form-check-inline" value="<?php echo $cantante['cancion_ids'] ?>">
                         <input class="form-check-input" type="checkbox" name="chxCancion[]" id="chxCancion" value="<?php echo $cancion['id'] ?>">
                         <label class="form-check-label" for="inlineCheckbox1"><?php echo $cancion['nombre'] ?></label>
                     </div>
@@ -45,7 +65,7 @@ $canciones = selectCanciones();
             </div>
             <div class="form-group">
                 <label for="imagenCantante">Imagen del Cantante</label>
-                <input type="file" class="form-control-file" id="imagenCantante" name="imagenCantante">
+                <input type="file" class="form-control-file" id="imagenCantante" name="imagenCantante" value="<?php echo $cantante['imagen'] ?>">
             </div>
             <button type="submit" class="btn btn-success" name="insertCantante">Guardar</button>
             <a href="../index.php" class="btn btn-danger">Cancelar</a>

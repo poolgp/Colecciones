@@ -17,6 +17,9 @@ require_once('./php_librarys/bd.php');
     <?php include_once("./php_partials/navBar.php") ?>
 
     <div class="container">
+
+        <?php include_once("./php_partials/mensajes.php") ?>
+
         <div class="row row-cols-1 row-cols-md-3">
             <?php
             $cantantes = selectCantantes();

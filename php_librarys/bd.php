@@ -1,5 +1,40 @@
 <?php
 
+session_start();
+
+function errorMessage($ex)
+{
+    if (!empty($ex->errorInfo[1])) {
+        switch ($ex->errorInfo[1]) {
+            case 1062:
+                $mensaje = 'Registro ducplicado';
+                break;
+            case 1451:
+                $mensaje = 'Registro con elementos relacionados';
+                break;
+            default:
+                $mensaje = $ex->errorInfo[1] . ' - ' . $ex->errorInfo[2];
+                break;
+        }
+    } else {
+        switch ($ex->getCode()) {
+            case 1044:
+                $mensaje = "Usuario y/o password incorrectos";
+                break;
+            case 1049:
+                $mensaje = "Base de datos deconocida";
+                break;
+            case 2002:
+                $mensaje = "No se encuentra el servidor";
+                break;
+            default:
+                $mensaje = $ex->getCode() . ' - ' . $ex->getMessage();
+                break;
+        }
+    }
+    return $mensaje;
+}
+
 function openBD()
 {
     $servername = "localhost";
@@ -50,35 +85,49 @@ function insertCantante($nombre, $fecha_nacimiento, $pais_id, $cancion_ids, $ima
 {
     $conn = openBD();
 
-    // Subir imagen
-    if (isset($imagen)) {
-        $rutaImg = "./imagenes/";
-        $nombreArchivo = $imagen['name'];
-        $imgSubida = $rutaImg . $nombreArchivo;
-        move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
-    } else {
-        $imgSubida = null;
-    }
+    try {
+        // Subir imagen
+        if (isset($imagen)) {
+            $rutaImg = "./imagenes/";
+            $nombreArchivo = $imagen['name'];
+            $imgSubida = $rutaImg . $nombreArchivo;
+            move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
+        } else {
+            $imgSubida = null;
+        }
 
-    // Insertar el cantante
-    $sentenciaText1 = "INSERT INTO cantantes (imagen, nombre, fecha_nacimiento, pais_id) VALUES (:imagen, :nombre, :fecha_nacimiento, :pais_id)";
-    $sentencia1 = $conn->prepare($sentenciaText1);
-    $sentencia1->bindParam(':imagen', $imgSubida);
-    $sentencia1->bindParam(':nombre', $nombre);
-    $sentencia1->bindParam(':fecha_nacimiento', $fecha_nacimiento);
-    $sentencia1->bindParam(':pais_id', $pais_id);
-    $sentencia1->execute();
+        // Insertar el cantante
+        $sentenciaText1 = "INSERT INTO cantantes (imagen, nombre, fecha_nacimiento, pais_id) VALUES (:imagen, :nombre, :fecha_nacimiento, :pais_id)";
+        $sentencia1 = $conn->prepare($sentenciaText1);
+        $sentencia1->bindParam(':imagen', $imgSubida);
+        $sentencia1->bindParam(':nombre', $nombre);
+        $sentencia1->bindParam(':fecha_nacimiento', $fecha_nacimiento);
+        $sentencia1->bindParam(':pais_id', $pais_id);
+        $sentencia1->execute();
 
-    $cantante_id = $conn->lastInsertId();
+        $cantante_id = $conn->lastInsertId();
 
-    // Insertar las canciones del cantante
-    $sentenciaText2 = "INSERT INTO cantantes_canciones (cantante_id, cancion_id) VALUES (:cantante_id, :cancion_id)";
-    $sentencia2 = $conn->prepare($sentenciaText2);
+        // Insertar las canciones del cantante
+        $sentenciaText2 = "INSERT INTO cantantes_canciones (cantante_id, cancion_id) VALUES (:cantante_id, :cancion_id)";
+        $sentencia2 = $conn->prepare($sentenciaText2);
 
-    foreach ($cancion_ids as $cancion_id) {
-        $sentencia2->bindParam(':cantante_id', $cantante_id);
-        $sentencia2->bindParam(':cancion_id', $cancion_id);
-        $sentencia2->execute();
+        foreach ($cancion_ids as $cancion_id) {
+            $sentencia2->bindParam(':cantante_id', $cantante_id);
+            $sentencia2->bindParam(':cancion_id', $cancion_id);
+            $sentencia2->execute();
+        }
+
+        $_SESSION['mensaje'] = "Registro insertado correctamente.";
+    } catch (PDOException $ex) {
+        $_SESSION['error'] = errorMessage($ex);
+
+        $cantante['nombre'] = $nombre;
+        $cantante['fecha_nacimiento'] = $fecha_nacimiento;
+        $cantante['pais_id'] = $pais_id;
+        $cantante['cancion_ids'] = $cancion_ids;
+        $cantante['imagen'] = $imagen;
+        
+        $_SESSION['cantante'] = $cantante;
     }
 
     $conn = closeBD();
