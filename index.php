@@ -1,6 +1,5 @@
 <?php
-require_once ('./php_librarys/bd.php');
-$cantantes = selectCantantes();
+require_once('./php_librarys/bd.php');
 ?>
 
 <!DOCTYPE html>
@@ -15,11 +14,13 @@ $cantantes = selectCantantes();
 </head>
 
 <body>
-    <?php include_once ("./php_partials/navBar.php") ?>
+    <?php include_once("./php_partials/navBar.php") ?>
 
     <div class="container">
         <div class="row row-cols-1 row-cols-md-3">
-            <?php foreach ($cantantes as $cantante) { ?>
+            <?php
+            $cantantes = selectCantantes();
+            foreach ($cantantes as $cantante) { ?>
                 <div class="col mb-4">
                     <div class="card m-3">
                         <img src="<?php echo $cantante['imagen']; ?>" class="card-img-top" alt="imagenCantante">
@@ -36,12 +37,22 @@ $cantantes = selectCantantes();
                                 <?php echo $cantante['nombre_pais']; ?>
                             </li>
                             <li class="list-group-item">
-                                cancion1
+                                <ul>
+                                    <?php $canciones = selectCancionesPorCantante($cantante['id']); ?>
+                                    <?php foreach ($canciones as $cancion) { ?>
+                                        <li>
+                                            <?php echo $cancion['nombre'] . "<br>"; ?>
+                                        </li>
+                                    <?php } ?>
+                                </ul>
                             </li>
                         </ul>
                         <div class="card-body">
-                            <button type="button" class="btn btn-success">Editar</button>
-                            <button type="button" class="btn btn-danger">Eliminar</button>
+                            <a class="btn btn-success" href="./forms/editarCantante.php?id=<?php echo $cantante['id']; ?>">Editar</a>
+                            <form action="./php_controllers/cantanteController.php" method="POST" style="display:inline;">
+                                <input type="hidden" name="cantante_id" value="<?php echo $cantante['id']; ?>">
+                                <button type="submit" class="btn btn-danger" name="deleteCantante">Eliminar</button>
+                            </form>
                         </div>
                     </div>
                 </div>
