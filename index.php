@@ -1,5 +1,5 @@
 <?php
-require_once('./php_librarys/bd.php');
+require_once ('./php_librarys/bd.php');
 $cantantes = selectCantantes();
 ?>
 
@@ -15,7 +15,7 @@ $cantantes = selectCantantes();
 </head>
 
 <body>
-    <?php include_once("./php_partials/navBar.php") ?>
+    <?php include_once ("./php_partials/navBar.php") ?>
 
     <div class="container">
         <div class="row row-cols-1 row-cols-md-3">
@@ -40,8 +40,8 @@ $cantantes = selectCantantes();
                             </li>
                         </ul>
                         <div class="card-body">
-                            <button type="button" class="btn btn-success">Success</button>
-                            <button type="button" class="btn btn-danger">Danger</button>
+                            <button type="button" class="btn btn-success">Editar</button>
+                            <button type="button" class="btn btn-danger">Eliminar</button>
                         </div>
                     </div>
                 </div>
