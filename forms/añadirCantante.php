@@ -32,7 +32,6 @@ $canciones = selectCanciones();
                 'imagen' => ''
             ];
         }
-
         ?>
 
         <form action="../php_controllers/cantanteController.php" method="POST" enctype="multipart/form-data">

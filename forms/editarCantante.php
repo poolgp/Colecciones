@@ -21,6 +21,9 @@ $canciones = selectCanciones();
 
 <body>
     <div class="container my-4">
+
+        <?php include_once("../php_partials/mensajes.php") ?>
+
         <form action="../php_controllers/cantanteController.php" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="cantante_id" value="<?php echo $cantante['id']; ?>">
             <div class="form-group">

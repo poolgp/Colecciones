@@ -17,11 +17,23 @@ if (isset($_POST['insertCantante'])) {
 } elseif (isset($_POST['deleteCantante'])) {
     // Eliminar cantante
     deleteCantante($_POST['cantante_id']);
-    header('Location: ../index.php');
-    exit();
+
+    if (isset($_SESSION['error'])) {
+        header('Location: ../index.php');
+        exit();
+    } else {
+        header('Location: ../index.php');
+        exit();
+    }
 } elseif (isset($_POST['editarCantante'])) {
     // Editar cantante
     editarCantante($_POST['cantante_id'], $_POST['cantanteNombre'], $_POST['fechaNacimiento'], $_POST['selectPais'], $_POST['chxCancion'], $_FILES['imagenCantante']);
-    header('Location: ../index.php');
-    exit();
+
+    if (isset($_SESSION['error'])) {
+        header('Location: ../forms/editarCantante.php');
+        exit();
+    } else {
+        header('Location: ../index.php');
+        exit();
+    }
 }
