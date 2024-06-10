@@ -26,7 +26,7 @@ require_once('./php_librarys/bd.php');
             foreach ($cantantes as $cantante) { ?>
                 <div class="col mb-4">
                     <div class="card m-3">
-                        <img src="<?php echo $cantante['imagen']; ?>" class="card-img-top" alt="imagenCantante">
+                        <img src="./imagenes/<?php echo $cantante['imagen']; ?>" class="card-img-top" alt="imagenCantante">
                         <div class="card-body">
                             <h4 class="card-title" style="margin: 0px;">
                                 <?php echo $cantante['nombre']; ?>

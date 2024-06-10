@@ -64,7 +64,7 @@ $canciones = selectCanciones();
             </div>
             <div class="form-group">
                 <label for="imagenCantante">Imagen del Cantante</label>
-                <input type="file" class="form-control-file" id="imagenCantante" name="imagenCantante" value="<?php echo $cantante['imagen'] ?>">
+                <input type="file" class="form-control-file" id="imagenCantante" name="imagenCantante">
             </div>
             <button type="submit" class="btn btn-success" name="insertCantante">Guardar</button>
             <a href="../index.php" class="btn btn-danger">Cancelar</a>

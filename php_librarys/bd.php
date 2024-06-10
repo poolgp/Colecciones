@@ -1,6 +1,6 @@
 <?php
 
-session_start();
+//session_start();
 
 function errorMessage($ex)
 {
@@ -87,19 +87,19 @@ function insertCantante($nombre, $fecha_nacimiento, $pais_id, $cancion_ids, $ima
 
     try {
         // Subir imagen
-        if (isset($imagen)) {
+        /*if (isset($imagen)) {
             $rutaImg = "./imagenes/";
-            $nombreArchivo = $imagen['name'];
+            $nombreArchivo = $imagen;
             $imgSubida = $rutaImg . $nombreArchivo;
             move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
         } else {
             $imgSubida = null;
-        }
+        }*/
 
         // Insertar el cantante
         $sentenciaText1 = "INSERT INTO cantantes (imagen, nombre, fecha_nacimiento, pais_id) VALUES (:imagen, :nombre, :fecha_nacimiento, :pais_id)";
         $sentencia1 = $conn->prepare($sentenciaText1);
-        $sentencia1->bindParam(':imagen', $imgSubida);
+        $sentencia1->bindParam(':imagen', $imagen);
         $sentencia1->bindParam(':nombre', $nombre);
         $sentencia1->bindParam(':fecha_nacimiento', $fecha_nacimiento);
         $sentencia1->bindParam(':pais_id', $pais_id);
@@ -224,14 +224,14 @@ function editarCantante($cantante_id, $nombre, $fecha_nacimiento, $pais_id, $can
 
     try {
         // Subir imagen
-        if (isset($imagen)) {
+        /*if (isset($imagen)) {
             $rutaImg = "./imagenes/";
             $nombreArchivo = $imagen['name'];
             $imgSubida = $rutaImg . $nombreArchivo;
             move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
         } else {
             $imgSubida = null;
-        }
+        }*/
 
         // Actualizar el cantante
         $sentenciaText = "UPDATE cantantes 
@@ -242,7 +242,7 @@ function editarCantante($cantante_id, $nombre, $fecha_nacimiento, $pais_id, $can
         $sentencia->bindParam(':nombre', $nombre);
         $sentencia->bindParam(':fecha_nacimiento', $fecha_nacimiento);
         $sentencia->bindParam(':pais_id', $pais_id);
-        $sentencia->bindParam(':imagen', $imgSubida);
+        $sentencia->bindParam(':imagen', $imagen);
         $sentencia->execute();
 
         // Eliminar las canciones actuales del cantante
