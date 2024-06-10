@@ -86,16 +86,6 @@ function insertCantante($nombre, $fecha_nacimiento, $pais_id, $cancion_ids, $ima
     $conn = openBD();
 
     try {
-        // Subir imagen
-        /*if (isset($imagen)) {
-            $rutaImg = "./imagenes/";
-            $nombreArchivo = $imagen;
-            $imgSubida = $rutaImg . $nombreArchivo;
-            move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
-        } else {
-            $imgSubida = null;
-        }*/
-
         // Insertar el cantante
         $sentenciaText1 = "INSERT INTO cantantes (imagen, nombre, fecha_nacimiento, pais_id) VALUES (:imagen, :nombre, :fecha_nacimiento, :pais_id)";
         $sentencia1 = $conn->prepare($sentenciaText1);
@@ -223,16 +213,6 @@ function editarCantante($cantante_id, $nombre, $fecha_nacimiento, $pais_id, $can
     $conn = openBD();
 
     try {
-        // Subir imagen
-        /*if (isset($imagen)) {
-            $rutaImg = "./imagenes/";
-            $nombreArchivo = $imagen['name'];
-            $imgSubida = $rutaImg . $nombreArchivo;
-            move_uploaded_file($imagen['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . $imgSubida);
-        } else {
-            $imgSubida = null;
-        }*/
-
         // Actualizar el cantante
         $sentenciaText = "UPDATE cantantes 
                   SET nombre = :nombre, fecha_nacimiento = :fecha_nacimiento, pais_id = :pais_id, imagen = :imagen
